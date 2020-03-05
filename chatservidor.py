@@ -5,25 +5,27 @@ import pickle
 import os
 
 class Servidor():
-	def __init__(self, host=socket.gethostname(), port=59989):
+	def __init__(self, host=socket.gethostname(), port=input("Introduzca el puerto: ")):
 		self.clientes = []
 		self.sock = socket.socket()
 		self.sock.bind((str(host), int(port)))
 		self.sock.listen(20)
 		self.sock.setblocking(False)
+		print("Su IP es: " , socket.gethostbyname(host))
+		
 
 		aceptar = threading.Thread(target=self.aceptarC)
 		procesar = threading.Thread(target=self.procesarC)
 		
 		aceptar.daemon = True
 		aceptar.start()
-
+		print("     ____Hilo que acepta conexiones iniciado en modo DAEMON\n")
 		procesar.daemon = True
 		procesar.start()
-
+		print("     ____Hilo que procesa mensajes  iniciado en modo DAEMON\n")	#no se el motivo de que no me permita hacer el print dentro del metodo. Estos dos print deberian ir en el interior de las funciones aceptarC y procesarC.
 		while True:
-			msg = input('SALIR = Q\n')
-			if msg == 'Q':
+			msg = input('SALIR = 1\n')
+			if msg == '1':
 				print("**** TALOGOOO *****")
 				self.sock.close()
 				sys.exit()
@@ -42,7 +44,7 @@ class Servidor():
 		while True:
 			try:
 				conn, addr = self.sock.accept()
-				print(f"\nConexion aceptada via {conn}\n")
+				print(f"\nConexion aceptada via {addr}\n")
 				conn.setblocking(False)
 				self.clientes.append(conn)
 			except:
@@ -57,6 +59,7 @@ class Servidor():
 						data = c.recv(32)
 						if data:
 							self.broadcast(data,c)
+							print(f"Clientes conectados right now: {len(self.clientes)}\n{pickle.loads(data)}")
 					except:
 						pass
 
